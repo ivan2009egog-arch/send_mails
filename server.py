@@ -85,6 +85,22 @@ def send_mail():
             return f'Error sending mail: {e}', http.HTTPStatus.INTERNAL_SERVER_ERROR
         return 'OK', http.HTTPStatus.OK
 
+import socket
+from flask import Flask, request, jsonify
+
+app = Flask(__name__)
+
+@app.route('/check-smtp', methods=['GET'])
+def check_smtp():
+    host = request.args.get('host', 'smtp.gmail.com')
+    port = int(request.args.get('port', 587))
+    timeout = float(request.args.get('timeout', 6))
+    try:
+        socket.create_connection((host, port), timeout=timeout)
+        return jsonify({'ok': True, 'host': host, 'port': port})
+    except Exception as e:
+        return jsonify({'ok': False, 'host': host, 'port': port, 'error': repr(e)}), 502
+
 
 if __name__ == '__main__':
     app.run(debug=True)
